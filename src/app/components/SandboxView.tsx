@@ -1,5 +1,7 @@
 "use client";
 
+import { IngestionStudio } from "./IngestionStudio";
+import { ExtractedTaxData } from "../lib/smartParser";
 import { useState, useMemo, useRef } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Eyebrow } from "@/components/ui/Eyebrow";
@@ -202,6 +204,33 @@ function roundSec288B(num: number): number {
 export function SandboxView() {
   const [inputs, setInputs] = useState<SandboxInputState>(DEFAULT_ARPAN_INPUTS);
   const [copiedJson, setCopiedJson] = useState(false);
+  const [showIngestionStudio, setShowIngestionStudio] = useState(false);
+
+  const handleApplyIngestedData = (data: ExtractedTaxData) => {
+    setInputs((prev) => ({
+      ...prev,
+      fullName: data.name || prev.fullName,
+      pan: data.pan || prev.pan,
+      grossSalary: data.grossSalary,
+      homeLoanInterest: data.homeLoanInterest,
+      stcg111A: data.stcg111A,
+      ltcg112A: data.ltcg112A,
+      savingsInterest: data.savingsInterest,
+      fdInterest: data.fdInterest,
+      dividendIncome: data.dividendIncome,
+      ded80C: data.ded80C,
+      ded80CCD1B: data.ded80CCD1B,
+      ded80D_Self: data.ded80D,
+      ded80TTA: data.ded80TTA,
+      tdsSalary: data.tdsSalary,
+      tdsOther: data.tdsOther,
+      advanceTaxQ1: data.advanceTaxQ1,
+      advanceTaxQ2: data.advanceTaxQ2,
+      advanceTaxQ3: data.advanceTaxQ3,
+      advanceTaxQ4: data.advanceTaxQ4,
+    }));
+    setShowIngestionStudio(false);
+  };
   const [jsonViewTab, setJsonViewTab] = useState<"visual" | "raw">("visual");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -564,6 +593,14 @@ export function SandboxView() {
             </button>
 
             <button
+              onClick={() => setShowIngestionStudio(!showIngestionStudio)}
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-emerald-800 text-[#faf8f4] hover:bg-emerald-900 transition-all shadow-xs"
+            >
+              <Upload className="h-3.5 w-3.5 text-emerald-300" />
+              <span>{showIngestionStudio ? "Hide Ingestion Studio" : "⚡ Ingest Form 16 / AIS"}</span>
+            </button>
+
+            <button
               onClick={() => setInputs(CONSULTANT_44ADA_INPUTS)}
               className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-medium bg-[#faf8f4] text-[#1c1b19] border border-[#e2dcce] hover:bg-[#f0ebe1] transition-all"
             >
@@ -595,6 +632,12 @@ export function SandboxView() {
             />
           </div>
         </div>
+
+        {showIngestionStudio && (
+          <div className="mb-6">
+            <IngestionStudio onApplyData={handleApplyIngestedData} onClose={() => setShowIngestionStudio(false)} />
+          </div>
+        )}
 
         {/* Regime Optimization Banner */}
         <div className="mt-6 p-4 rounded-xl bg-[#faf8f4] border border-[#e2dcce] flex flex-col sm:flex-row sm:items-center justify-between gap-4">

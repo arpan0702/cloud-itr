@@ -8,17 +8,19 @@ import {
   Building,
   Sparkles,
   ShieldCheck,
+  Upload,
+  FileText,
   Calculator,
   Download,
-  FileText,
   Activity,
   FileCheck
 } from "lucide-react";
 import { WorkstationView } from "./components/WorkstationView";
 import { SandboxView } from "./components/SandboxView";
 import { DocReviewView } from "./components/DocReviewView";
+import { IngestionStudio } from "./components/IngestionStudio";
 
-type ViewMode = "workstation" | "sandbox" | "docs";
+type ViewMode = "workstation" | "sandbox" | "ingest" | "docs";
 
 export default function CloudITRProPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("workstation");
@@ -30,6 +32,8 @@ export default function CloudITRProPage() {
       const modeParam = params.get("mode") || params.get("view");
       if (modeParam === "sandbox") {
         setViewMode("sandbox");
+      } else if (modeParam === "ingest" || modeParam === "upload" || modeParam === "parser") {
+        setViewMode("ingest");
       } else if (modeParam === "docs" || modeParam === "review") {
         setViewMode("docs");
       }
@@ -41,6 +45,8 @@ export default function CloudITRProPage() {
     if (typeof document !== "undefined") {
       if (viewMode === "sandbox") {
         document.title = "Filing Sandbox & ITD JSON Studio — CloudITR Pro | Nafisi Labs";
+      } else if (viewMode === "ingest") {
+        document.title = "Form 16 & AIS Document Ingestion — CloudITR Pro | Nafisi Labs";
       } else if (viewMode === "docs") {
         document.title = "Compliance & Test Specification Review — CloudITR Pro | Nafisi Labs";
       } else {
@@ -95,10 +101,10 @@ export default function CloudITRProPage() {
         </div>
 
         {/* ============================================================== */}
-        {/* TOP LEVEL NAVIGATION SWITCHER: WORKSTATION vs SANDBOX vs DOCS */}
+        {/* TOP LEVEL NAVIGATION SWITCHER: WORKSTATION / SANDBOX / INGEST / DOCS */}
         {/* ============================================================== */}
         <div className="mb-10 rounded-2xl border border-border bg-canvas p-2 shadow-xs">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             <button
               onClick={() => setViewMode("workstation")}
               className={`flex items-center justify-between p-3.5 rounded-xl text-left transition-all ${
@@ -112,9 +118,9 @@ export default function CloudITRProPage() {
                   <Building className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="font-medium text-xs leading-none">CA Practice Workstation</div>
+                  <div className="font-medium text-xs leading-none">CA Workstation</div>
                   <div className={`text-[11px] mt-1 ${viewMode === "workstation" ? "text-stone-300" : "text-ink-muted"}`}>
-                    Multi-client practice &amp; schedules
+                    Multi-client practice
                   </div>
                 </div>
               </div>
@@ -138,9 +144,9 @@ export default function CloudITRProPage() {
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="font-medium text-xs leading-none">Filing Sandbox &amp; ITD JSON</div>
+                  <div className="font-medium text-xs leading-none">Filing Sandbox</div>
                   <div className={`text-[11px] mt-1 ${viewMode === "sandbox" ? "text-stone-300" : "text-ink-muted"}`}>
-                    Custom inputs, visualizer &amp; download
+                    Live JSON studio
                   </div>
                 </div>
               </div>
@@ -148,6 +154,32 @@ export default function CloudITRProPage() {
                 viewMode === "sandbox" ? "bg-emerald-900/80 text-emerald-300" : "bg-emerald-100 text-emerald-800"
               }`}>
                 Arpan AIS
+              </span>
+            </button>
+
+            <button
+              onClick={() => setViewMode("ingest")}
+              className={`flex items-center justify-between p-3.5 rounded-xl text-left transition-all ${
+                viewMode === "ingest"
+                  ? "bg-ink text-paper shadow-sm"
+                  : "bg-stone-50/50 hover:bg-stone-100/80 text-ink-soft hover:text-ink"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${viewMode === "ingest" ? "bg-stone-800 text-sky-400" : "bg-stone-200/60 text-sky-700"}`}>
+                  <Upload className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-medium text-xs leading-none">Smart Ingestion</div>
+                  <div className={`text-[11px] mt-1 ${viewMode === "ingest" ? "text-stone-300" : "text-ink-muted"}`}>
+                    Form 16 &amp; AIS parser
+                  </div>
+                </div>
+              </div>
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                viewMode === "ingest" ? "bg-sky-900/80 text-sky-300" : "bg-sky-100 text-sky-800"
+              }`}>
+                Auto-Fill
               </span>
             </button>
 
@@ -164,9 +196,9 @@ export default function CloudITRProPage() {
                   <ShieldCheck className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="font-medium text-xs leading-none">Compliance &amp; Test Review</div>
+                  <div className="font-medium text-xs leading-none">Compliance &amp; Tests</div>
                   <div className={`text-[11px] mt-1 ${viewMode === "docs" ? "text-stone-300" : "text-ink-muted"}`}>
-                    PRD matrix, safeguards &amp; 22 tests
+                    PRD matrix &amp; 22 tests
                   </div>
                 </div>
               </div>
@@ -184,6 +216,13 @@ export default function CloudITRProPage() {
         {/* ============================================================== */}
         {viewMode === "workstation" && <WorkstationView />}
         {viewMode === "sandbox" && <SandboxView />}
+        {viewMode === "ingest" && (
+          <IngestionStudio
+            onApplyData={() => {
+              setViewMode("sandbox");
+            }}
+          />
+        )}
         {viewMode === "docs" && <DocReviewView />}
 
         {/* Footer Design Philosophy Note */}
