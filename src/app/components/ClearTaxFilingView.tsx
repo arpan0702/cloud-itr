@@ -25,7 +25,12 @@ import {
   BarChart3,
   Calendar,
   Lock,
-  ExternalLink
+  ExternalLink,
+  Smartphone,
+  KeyRound,
+  RefreshCw,
+  Radio,
+  Server
 } from "lucide-react";
 import {
   ExtractedTaxData,
@@ -74,6 +79,71 @@ export function ClearTaxFilingView() {
     { name: "ITD_AIS_Statement.json", size: "84 KB", type: "Annual Information Statement", content: JSON.stringify(SAMPLE_OFFICIAL_AIS_JSON) },
   ]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Ingestion Mode: Auto-Fetch (PAN & Mobile OTP) vs File Upload
+  const [ingestTab, setIngestTab] = useState<"autofetch" | "files">("autofetch");
+  const [autofetchPan, setAutofetchPan] = useState("AARPD7821M");
+  const [autofetchPhone, setAutofetchPhone] = useState("9876543210");
+  const [autofetchStep, setAutofetchStep] = useState<"input" | "otp" | "syncing" | "success">("input");
+  const [enteredOtp, setEnteredOtp] = useState("");
+  const [syncPhase, setSyncPhase] = useState<number>(0);
+  const [sourceTds, setSourceTds] = useState(true);
+  const [sourceAis, setSourceAis] = useState(true);
+  const [sourceBroker, setSourceBroker] = useState(true);
+
+  const handleRequestOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!autofetchPan.trim() || !autofetchPhone.trim()) return;
+    setAutofetchStep("otp");
+    setEnteredOtp("");
+  };
+
+  const handleVerifyOtp = () => {
+    setAutofetchStep("syncing");
+    setSyncPhase(1);
+
+    setTimeout(() => {
+      setSyncPhase(2);
+    }, 600);
+
+    setTimeout(() => {
+      setSyncPhase(3);
+    }, 1200);
+
+    setTimeout(() => {
+      setSyncPhase(4);
+      const synced = { ...PREPACKAGED_DEMOS.salariedTrader.data };
+      synced.pan = autofetchPan.toUpperCase().trim() || "AARPD7821M";
+      setTaxData(synced);
+      setUploadedFilesList([
+        {
+          name: `ITD_Govt_PreFill_26AS_${selectedAY}.json`,
+          size: "48 KB",
+          type: "Official ITD ERI Sync (Salary TDS: ₹2,35,000)",
+          content: SAMPLE_FORM_16_TEXT,
+        },
+        {
+          name: `CBDT_AIS_Interest_Dividends_${selectedAY}.json`,
+          size: "84 KB",
+          type: "Annual Information Statement (₹96,500)",
+          content: JSON.stringify(SAMPLE_OFFICIAL_AIS_JSON),
+        },
+        {
+          name: `Zerodha_Capital_Gains_ScheduleCG.json`,
+          size: "38 KB",
+          type: "Broker Gateway Sync (₹3,80,000 Gains)",
+          content: SAMPLE_ZERODHA_PNL_CSV,
+        },
+      ]);
+      setAutofetchStep("success");
+    }, 1800);
+  };
+
+  const handleResetAutofetch = () => {
+    setAutofetchStep("input");
+    setEnteredOtp("");
+    setSyncPhase(0);
+  };
 
   // Switch demo preset
   const handleSelectDemo = (demoKey: keyof typeof PREPACKAGED_DEMOS) => {
@@ -413,35 +483,325 @@ export function ClearTaxFilingView() {
       {/* UPLOAD & DEMO LAUNCH CARD */}
       {/* ============================================================== */}
       <div className="max-w-4xl mx-auto rounded-3xl border border-[#e2dcce] bg-[#ffffff] p-6 sm:p-10 shadow-sm space-y-8">
-        {/* Drag and Drop Zone */}
-        <div
-          onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-[#e2dcce] hover:border-[#1c1b19] bg-[#faf8f4] hover:bg-[#f5f0e6] p-8 sm:p-12 rounded-2xl text-center cursor-pointer transition-all group"
-        >
-          <div className="mx-auto h-16 w-16 rounded-2xl bg-[#ffffff] border border-[#e2dcce] flex items-center justify-center text-[#6b665f] group-hover:text-[#1c1b19] shadow-xs group-hover:scale-105 transition-all">
-            <Upload className="h-8 w-8" />
-          </div>
-          <h3 className="mt-4 font-serif text-xl font-medium text-[#1c1b19]">
-            Drop Form 16, Broker P&amp;L, or AIS file here
-          </h3>
-          <p className="mt-1 text-xs text-[#8c857b]">
-            Supports PDF, CSV, Excel, JSON or plaintext · Accepts multiple files at once
-          </p>
-
-          <div className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-[#1c1b19] text-[#faf8f4] group-hover:bg-[#2e2c29] transition-all shadow-xs">
-            <Upload className="h-3.5 w-3.5" />
-            <span>Browse Files from Computer</span>
+        {/* INGESTION METHOD SELECTOR TABS */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#f0ebe1]">
+          <div>
+            <h2 className="font-serif text-lg font-medium text-[#1c1b19]">
+              Document Ingestion &amp; Live Sync
+            </h2>
+            <p className="text-xs text-[#8c857b]">
+              Auto-fetch tax records via Government OTP or upload local files for AY {selectedAY}
+            </p>
           </div>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept=".pdf,.csv,.xlsx,.xls,.json,.txt"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
+          <div className="inline-flex p-1 rounded-xl bg-[#faf8f4] border border-[#e2dcce]">
+            <button
+              onClick={() => setIngestTab("autofetch")}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                ingestTab === "autofetch"
+                  ? "bg-[#1c1b19] text-[#faf8f4] shadow-xs"
+                  : "text-[#6b665f] hover:text-[#1c1b19]"
+              }`}
+            >
+              <Smartphone className="h-3.5 w-3.5 text-amber-400" />
+              <span>⚡ Auto-Fetch (PAN &amp; OTP)</span>
+            </button>
+            <button
+              onClick={() => setIngestTab("files")}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                ingestTab === "files"
+                  ? "bg-[#1c1b19] text-[#faf8f4] shadow-xs"
+                  : "text-[#6b665f] hover:text-[#1c1b19]"
+              }`}
+            >
+              <Upload className="h-3.5 w-3.5" />
+              <span>Upload Files</span>
+            </button>
+          </div>
         </div>
+
+        {/* TAB 1: AUTO-FETCH VIA PAN & MOBILE OTP */}
+        {ingestTab === "autofetch" && (
+          <div className="rounded-2xl border border-[#e2dcce] bg-[#faf8f4] p-6 sm:p-8 space-y-6">
+            {autofetchStep === "input" && (
+              <form onSubmit={handleRequestOtp} className="space-y-6">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-xs font-mono font-semibold text-[#1c1b19] uppercase tracking-wider">
+                      Government ERI &amp; Broker Gateway Integration
+                    </span>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-[#ffffff] text-[#6b665f] border border-[#e2dcce]">
+                    CBDT &amp; RBI Regulated Rails
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* PAN Input */}
+                  <div>
+                    <label className="block text-xs font-semibold text-[#1c1b19] uppercase tracking-wider font-mono mb-1.5">
+                      Permanent Account Number (PAN)
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={10}
+                      value={autofetchPan}
+                      onChange={(e) => setAutofetchPan(e.target.value.toUpperCase())}
+                      placeholder="ABCDE1234F"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#e2dcce] bg-[#ffffff] text-sm font-mono text-[#1c1b19] focus:outline-none focus:ring-2 focus:ring-[#1c1b19]/20 tracking-wider uppercase font-semibold"
+                      required
+                    />
+                    <span className="text-[11px] text-[#8c857b] mt-1 block">
+                      Matches taxpayer PAN on official tax portal
+                    </span>
+                  </div>
+
+                  {/* Mobile Number Input */}
+                  <div>
+                    <label className="block text-xs font-semibold text-[#1c1b19] uppercase tracking-wider font-mono mb-1.5">
+                      Aadhaar / ITD Linked Mobile Number
+                    </label>
+                    <div className="flex rounded-xl border border-[#e2dcce] bg-[#ffffff] overflow-hidden focus-within:ring-2 focus-within:ring-[#1c1b19]/20">
+                      <span className="px-3 py-2.5 bg-[#f0ebe1] text-xs font-mono font-medium text-[#6b665f] border-r border-[#e2dcce] flex items-center">
+                        +91
+                      </span>
+                      <input
+                        type="tel"
+                        maxLength={10}
+                        value={autofetchPhone}
+                        onChange={(e) => setAutofetchPhone(e.target.value)}
+                        placeholder="9876543210"
+                        className="w-full px-3 py-2.5 bg-[#ffffff] text-sm font-mono text-[#1c1b19] focus:outline-none tracking-wider font-semibold"
+                        required
+                      />
+                    </div>
+                    <span className="text-[11px] text-[#8c857b] mt-1 block">
+                      One-time password (OTP) will be dispatched here
+                    </span>
+                  </div>
+                </div>
+
+                {/* Statutory Sources Checkboxes */}
+                <div className="p-4 rounded-xl bg-[#ffffff] border border-[#e2dcce] space-y-2.5">
+                  <span className="text-xs font-semibold text-[#1c1b19] block font-mono">
+                    Select Data Sources to Auto-Fetch:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <label className="flex items-center gap-2 text-xs text-[#2e2c29] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={sourceTds}
+                        onChange={(e) => setSourceTds(e.target.checked)}
+                        className="rounded border-[#e2dcce] text-[#1c1b19] focus:ring-0"
+                      />
+                      <span>Form 26AS &amp; ITD Pre-fill (Salary TDS)</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-[#2e2c29] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={sourceAis}
+                        onChange={(e) => setSourceAis(e.target.checked)}
+                        className="rounded border-[#e2dcce] text-[#1c1b19] focus:ring-0"
+                      />
+                      <span>AIS Statement (Interest &amp; Dividends)</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-[#2e2c29] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={sourceBroker}
+                        onChange={(e) => setSourceBroker(e.target.checked)}
+                        className="rounded border-[#e2dcce] text-[#1c1b19] focus:ring-0"
+                      />
+                      <span>Broker P&amp;L (Zerodha / Groww Gateway)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                  <div className="flex items-center gap-2 text-xs text-[#8c857b]">
+                    <Lock className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    <span>256-bit encryption · Official e-Return Intermediary (ERI) protocol</span>
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs font-semibold bg-[#1c1b19] text-[#faf8f4] hover:bg-[#2e2c29] transition-all shadow-xs"
+                  >
+                    <Smartphone className="h-4 w-4 text-amber-400" />
+                    <span>Send Government &amp; Broker OTP</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* OTP VERIFICATION STEP */}
+            {autofetchStep === "otp" && (
+              <div className="text-center py-4 space-y-5 max-w-md mx-auto">
+                <div className="h-12 w-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-amber-800 shadow-xs">
+                  <KeyRound className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-medium text-[#1c1b19]">
+                    Verify Mobile OTP
+                  </h3>
+                  <p className="text-xs text-[#6b665f] mt-1">
+                    Enter the 6-digit verification code sent to +91 <strong>{autofetchPhone}</strong> linked to PAN <strong>{autofetchPan}</strong>
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={enteredOtp}
+                    onChange={(e) => setEnteredOtp(e.target.value)}
+                    placeholder="Enter 6-digit OTP"
+                    className="w-56 mx-auto px-4 py-3 rounded-xl border border-[#e2dcce] bg-[#ffffff] text-center font-mono text-xl tracking-widest text-[#1c1b19] focus:outline-none focus:ring-2 focus:ring-[#1c1b19]/20 font-bold"
+                  />
+
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setEnteredOtp("849201")}
+                      className="text-xs font-mono font-medium text-amber-800 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1 rounded-lg transition-colors"
+                    >
+                      ⚡ Auto-Fill Demo OTP (849201)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleVerifyOtp}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold bg-[#1c1b19] text-[#faf8f4] hover:bg-[#2e2c29] transition-all shadow-xs"
+                  >
+                    <Check className="h-4 w-4 text-emerald-400" />
+                    <span>Verify &amp; Fetch Records</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetAutofetch}
+                    className="text-xs text-[#8c857b] hover:text-[#1c1b19] underline"
+                  >
+                    Change PAN / Mobile
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* SYNCING PROGRESS STEP */}
+            {autofetchStep === "syncing" && (
+              <div className="py-6 space-y-5 text-center max-w-lg mx-auto">
+                <div className="h-12 w-12 rounded-2xl bg-[#ffffff] border border-[#e2dcce] flex items-center justify-center mx-auto text-[#1c1b19] shadow-xs animate-spin">
+                  <RefreshCw className="h-6 w-6 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-medium text-[#1c1b19]">
+                    Synchronizing Tax Records...
+                  </h3>
+                  <p className="text-xs text-[#8c857b] mt-1">
+                    Establishing secure handshake with Income Tax Department &amp; Broker APIs
+                  </p>
+                </div>
+
+                <div className="space-y-2 text-left bg-[#ffffff] p-4 rounded-xl border border-[#e2dcce] font-mono text-xs">
+                  <div className={`flex items-center gap-2 ${syncPhase >= 1 ? "text-emerald-700" : "text-[#8c857b]"}`}>
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    <span>Connecting to CBDT e-Filing ERI Gateway for {autofetchPan}...</span>
+                  </div>
+                  <div className={`flex items-center gap-2 ${syncPhase >= 2 ? "text-emerald-700" : "text-[#8c857b]"}`}>
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    <span>Retrieved Form 26AS: ₹2,35,000 TDS from TechCorp India Pvt Ltd...</span>
+                  </div>
+                  <div className={`flex items-center gap-2 ${syncPhase >= 3 ? "text-emerald-700" : "text-[#8c857b]"}`}>
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    <span>Retrieved AIS / TIS Statement: ₹96,500 Interest &amp; Dividends...</span>
+                  </div>
+                  <div className={`flex items-center gap-2 ${syncPhase >= 4 ? "text-emerald-700" : "text-[#8c857b]"}`}>
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    <span>Retrieved Zerodha Schedule CG: ₹3,80,000 Capital Gains...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SUCCESS BANNER STEP */}
+            {autofetchStep === "success" && (
+              <div className="py-4 space-y-4 text-center max-w-xl mx-auto">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto text-emerald-700 shadow-xs">
+                  <ShieldCheck className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-medium text-[#1c1b19]">
+                    Official Records Synchronized for PAN {autofetchPan}
+                  </h3>
+                  <p className="text-xs text-[#6b665f] mt-1">
+                    Form 26AS, AIS/TIS, and Broker Capital Gains have been directly mapped to your tax return for AY {selectedAY}.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
+                  <div className="p-2.5 rounded-lg bg-[#ffffff] border border-[#e2dcce]">
+                    <span className="text-[#8c857b] block text-[10px]">FORM 26AS SALARY</span>
+                    <span className="font-semibold text-[#1c1b19]">₹28,50,000</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-[#ffffff] border border-[#e2dcce]">
+                    <span className="text-[#8c857b] block text-[10px]">AIS INTEREST &amp; DIVIDENDS</span>
+                    <span className="font-semibold text-[#1c1b19]">₹96,500</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-[#ffffff] border border-[#e2dcce]">
+                    <span className="text-[#8c857b] block text-[10px]">ZERODHA CAPITAL GAINS</span>
+                    <span className="font-semibold text-[#1c1b19]">₹3,80,000</span>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={handleResetAutofetch}
+                    className="inline-flex items-center gap-1.5 text-xs text-[#6b665f] hover:text-[#1c1b19] underline"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    <span>Fetch for Another PAN or Re-Sync</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: MANUAL FILE UPLOAD DROPZONE */}
+        {ingestTab === "files" && (
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="border-2 border-dashed border-[#e2dcce] hover:border-[#1c1b19] bg-[#faf8f4] hover:bg-[#f5f0e6] p-8 sm:p-12 rounded-2xl text-center cursor-pointer transition-all group"
+          >
+            <div className="mx-auto h-16 w-16 rounded-2xl bg-[#ffffff] border border-[#e2dcce] flex items-center justify-center text-[#6b665f] group-hover:text-[#1c1b19] shadow-xs group-hover:scale-105 transition-all">
+              <Upload className="h-8 w-8" />
+            </div>
+            <h3 className="mt-4 font-serif text-xl font-medium text-[#1c1b19]">
+              Drop Form 16, Broker P&amp;L, or AIS file here
+            </h3>
+            <p className="mt-1 text-xs text-[#8c857b]">
+              Supports PDF, CSV, Excel, JSON or plaintext · Accepts multiple files at once
+            </p>
+
+            <div className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-[#1c1b19] text-[#faf8f4] group-hover:bg-[#2e2c29] transition-all shadow-xs">
+              <Upload className="h-3.5 w-3.5" />
+              <span>Browse Files from Computer</span>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.csv,.xlsx,.xls,.json,.txt"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </div>
+        )}
 
         {/* OR DIVIDER */}
         <div className="relative flex items-center justify-center">
