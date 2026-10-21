@@ -82,7 +82,7 @@ export default function CloudITRProPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Badge tone="new">AY 2025–26 e-Filing</Badge>
+            <Badge tone="new">AY 2026–27 Ready</Badge>
             <a
               href="https://github.com/arpan0702/cloud-itr"
               target="_blank"

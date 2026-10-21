@@ -70,7 +70,7 @@ export function ClearTaxFilingView() {
   const [copied, setCopied] = useState(false);
   const [uploadedFilesList, setUploadedFilesList] = useState<UploadedFileRecord[]>([
     { name: "Form_16_TechCorp_India.pdf", size: "142 KB", type: "Form 16 (Salary)", content: SAMPLE_FORM_16_TEXT },
-    { name: "Zerodha_Tax_PnL_FY2024-25.csv", size: "38 KB", type: "Broker Capital Gains", content: SAMPLE_ZERODHA_PNL_CSV },
+    { name: "Zerodha_Tax_PnL_FY2025-26.csv", size: "38 KB", type: "Broker Capital Gains", content: SAMPLE_ZERODHA_PNL_CSV },
     { name: "ITD_AIS_Statement.json", size: "84 KB", type: "Annual Information Statement", content: JSON.stringify(SAMPLE_OFFICIAL_AIS_JSON) },
   ]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -85,7 +85,7 @@ export function ClearTaxFilingView() {
       if (demoKey === "salariedTrader") {
         setUploadedFilesList([
           { name: "Form_16_TechCorp_India.pdf", size: "142 KB", type: "Form 16 (Salary)", content: SAMPLE_FORM_16_TEXT },
-          { name: "Zerodha_Tax_PnL_FY2024-25.csv", size: "38 KB", type: "Broker Capital Gains", content: SAMPLE_ZERODHA_PNL_CSV },
+          { name: "Zerodha_Tax_PnL_FY2025-26.csv", size: "38 KB", type: "Broker Capital Gains", content: SAMPLE_ZERODHA_PNL_CSV },
           { name: "ITD_AIS_Statement.json", size: "84 KB", type: "Annual Information Statement", content: JSON.stringify(SAMPLE_OFFICIAL_AIS_JSON) },
         ]);
       } else if (demoKey === "mutualFundInvestor") {
