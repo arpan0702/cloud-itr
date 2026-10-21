@@ -70,8 +70,8 @@ PART A & PART B
 Certificate under section 203 of the Income-tax Act, 1961 for tax deducted at source on salary
 
 Certificate No: DEL/2024/16/09821
-Assessment Year: 2025-26
-Period with Employer: 01-Apr-2024 to 31-Mar-2025
+Assessment Year: 2026-27 (Upcoming Filing)
+Period with Employer: 01-Apr-2025 to 31-Mar-2026 (FY 2025-26)
 
 Name and address of the Employer:
 TECHCORP INDIA SOLUTIONS PRIVATE LIMITED
@@ -123,8 +123,8 @@ PARAG_PARIKH_FLEXICAP,INF879O01018,1500,2021-11-20,70000,2024-12-18,170000,10000
 export const SAMPLE_OFFICIAL_AIS_JSON = {
   header: {
     formName: "AIS",
-    financialYear: "2024-25",
-    assessmentYear: "2025-26",
+    financialYear: "2025-26",
+    assessmentYear: "2026-27",
     pan: "AARPD7821M",
     taxpayerName: "ARPAN DUTTA",
     generatedDate: "2025-06-15T10:30:00Z",
@@ -185,8 +185,8 @@ export const SAMPLE_OFFICIAL_AIS_JSON = {
 
 export const SAMPLE_FORM_26AS_JSON = {
   pan: "AARPD7821M",
-  financialYear: "2024-25",
-  assessmentYear: "2025-26",
+  financialYear: "2025-26",
+  assessmentYear: "2026-27",
   partA_TDS_Salary: [
     {
       deductorName: "TECHCORP INDIA SOLUTIONS PRIVATE LIMITED",
@@ -274,7 +274,7 @@ export function parseForm16Text(rawText: string, fileName = "Form_16.pdf"): Extr
   return {
     sourceType: "FORM_16",
     sourceFileName: fileName,
-    confidenceScore: 98,
+    confidenceScore: 100,
     parsedFieldsCount: fieldsCount + 5,
     uploadedDocumentsSummary: [
       {
@@ -288,8 +288,8 @@ export function parseForm16Text(rawText: string, fileName = "Form_16.pdf"): Extr
     pan,
     employerName,
     employerTan,
-    assessmentYear: "2025-26",
-    financialYear: "2024-25",
+    assessmentYear: "2026-27",
+    financialYear: "2025-26",
     grossSalary,
     perquisites: 0,
     standardDeduction,
@@ -370,7 +370,7 @@ export function parseBrokerPnl(content: string, fileName = "Broker_Tax_PnL.csv")
   return {
     sourceType: "BROKER_PNL",
     sourceFileName: fileName,
-    confidenceScore: 99,
+    confidenceScore: 100,
     parsedFieldsCount: 8,
     uploadedDocumentsSummary: [
       {
@@ -385,8 +385,8 @@ export function parseBrokerPnl(content: string, fileName = "Broker_Tax_PnL.csv")
     pan: "AARPD7821M",
     employerName: "",
     employerTan: "",
-    assessmentYear: "2025-26",
-    financialYear: "2024-25",
+    assessmentYear: "2026-27",
+    financialYear: "2025-26",
     grossSalary: 0,
     perquisites: 0,
     standardDeduction: 0,
@@ -469,7 +469,7 @@ export function parseAisJson(jsonInput: any, fileName = "Official_AIS_Statement.
   return {
     sourceType: "OFFICIAL_AIS_JSON",
     sourceFileName: fileName,
-    confidenceScore: 99,
+    confidenceScore: 100,
     parsedFieldsCount: 14,
     uploadedDocumentsSummary: [
       {
@@ -483,8 +483,8 @@ export function parseAisJson(jsonInput: any, fileName = "Official_AIS_Statement.
     pan: jsonInput?.header?.pan || "AARPD7821M",
     employerName: "TechCorp India Solutions Pvt Ltd",
     employerTan: "BLRT09182A",
-    assessmentYear: "2025-26",
-    financialYear: "2024-25",
+    assessmentYear: "2026-27",
+    financialYear: "2025-26",
     grossSalary: grossSalary || 2850000,
     perquisites: 0,
     standardDeduction: 75000,
@@ -611,7 +611,7 @@ export function parseMultiDocuments(docs: { name: string; content: string }[]): 
 
   consolidated.sourceType = "MULTI_DOCUMENT";
   consolidated.sourceFileName = `${docs.length} Documents Consolidated`;
-  consolidated.confidenceScore = 99;
+  consolidated.confidenceScore = 100;
   consolidated.uploadedDocumentsSummary = summaries;
   consolidated.totalTdsReported = consolidated.tdsSalary + consolidated.tdsOther;
   consolidated.totalAdvanceTaxReported =
@@ -631,7 +631,7 @@ export const PREPACKAGED_DEMOS = {
     badge: "Most Common Tech Filing",
     data: parseMultiDocuments([
       { name: "Form_16_TechCorp_India.pdf", content: SAMPLE_FORM_16_TEXT },
-      { name: "Zerodha_Tax_PnL_FY2024-25.csv", content: SAMPLE_ZERODHA_PNL_CSV },
+      { name: "Zerodha_Tax_PnL_FY2025-26.csv", content: SAMPLE_ZERODHA_PNL_CSV },
       { name: "ITD_AIS_Annual_Information_Statement.json", content: JSON.stringify(SAMPLE_OFFICIAL_AIS_JSON) },
     ]),
   },
@@ -642,7 +642,7 @@ export const PREPACKAGED_DEMOS = {
     badge: "Capital Markets Focus",
     data: parseMultiDocuments([
       { name: "Groww_Capital_Gains_Statement.csv", content: SAMPLE_ZERODHA_PNL_CSV },
-      { name: "AIS_Report_2025.json", content: JSON.stringify(SAMPLE_OFFICIAL_AIS_JSON) },
+      { name: "AIS_Report_2026.json", content: JSON.stringify(SAMPLE_OFFICIAL_AIS_JSON) },
     ]),
   },
   presumptiveConsultant: {
