@@ -13,29 +13,35 @@ import {
   Calculator,
   Download,
   Activity,
-  FileCheck
+  FileCheck,
+  Zap
 } from "lucide-react";
+import { ClearTaxFilingView } from "./components/ClearTaxFilingView";
 import { WorkstationView } from "./components/WorkstationView";
 import { SandboxView } from "./components/SandboxView";
 import { DocReviewView } from "./components/DocReviewView";
 import { IngestionStudio } from "./components/IngestionStudio";
 
-type ViewMode = "workstation" | "sandbox" | "ingest" | "docs";
+type ViewMode = "instant" | "workstation" | "sandbox" | "ingest" | "docs";
 
 export default function CloudITRProPage() {
-  const [viewMode, setViewMode] = useState<ViewMode>("workstation");
+  const [viewMode, setViewMode] = useState<ViewMode>("instant");
 
   // Read URL query params on mount for direct deep-linking
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const modeParam = params.get("mode") || params.get("view");
-      if (modeParam === "sandbox") {
+      if (modeParam === "workstation") {
+        setViewMode("workstation");
+      } else if (modeParam === "sandbox") {
         setViewMode("sandbox");
       } else if (modeParam === "ingest" || modeParam === "upload" || modeParam === "parser") {
         setViewMode("ingest");
       } else if (modeParam === "docs" || modeParam === "review") {
         setViewMode("docs");
+      } else if (modeParam === "instant" || modeParam === "cleartax" || modeParam === "file") {
+        setViewMode("instant");
       }
     }
   }, []);
@@ -43,7 +49,9 @@ export default function CloudITRProPage() {
   // Set explicit document title
   useEffect(() => {
     if (typeof document !== "undefined") {
-      if (viewMode === "sandbox") {
+      if (viewMode === "instant") {
+        document.title = "File Your ITR in 3 Minutes — CloudITR | Nafisi Labs";
+      } else if (viewMode === "sandbox") {
         document.title = "Filing Sandbox & ITD JSON Studio — CloudITR Pro | Nafisi Labs";
       } else if (viewMode === "ingest") {
         document.title = "Form 16 & AIS Document Ingestion — CloudITR Pro | Nafisi Labs";
@@ -69,12 +77,12 @@ export default function CloudITRProPage() {
             </Link>
             <span className="text-ink-muted">/</span>
             <span className="label-uppercase text-caption font-medium tracking-[var(--tracking-label)] text-ink">
-              CloudITR Pro
+              CloudITR (ClearTax Simplicity)
             </span>
           </div>
 
           <div className="flex items-center gap-3">
-            <Badge tone="new">CA Professional Suite</Badge>
+            <Badge tone="new">AY 2025–26 e-Filing</Badge>
             <a
               href="https://github.com/arpan0702/cloud-itr"
               target="_blank"
@@ -87,24 +95,63 @@ export default function CloudITRProPage() {
           </div>
         </div>
 
-        {/* Hero Section */}
-        <div className="max-w-4xl mb-8">
-          <Eyebrow className="mb-2">Zero-Error Income Tax Compliance &amp; Computation</Eyebrow>
-          <h1 className="font-display text-display-sm text-ink sm:text-display-md">
-            CloudITR Pro
-          </h1>
-          <p className="mt-3 text-body-sm text-ink-soft leading-relaxed">
-            A cloud-native Indian Income Tax compliance workstation engineered for Chartered Accountants and tax practitioners.
-            Features stateless deterministic computation with Section 288A/B rounding, side-by-side Section 115BAC dual-regime optimization, 
-            quarterly Section 234C advance tax scheduling, proactive AIS/26AS diff reconciliation, and schema-blocking official ITD return generation.
-          </p>
-        </div>
-
         {/* ============================================================== */}
-        {/* TOP LEVEL NAVIGATION SWITCHER: WORKSTATION / SANDBOX / INGEST / DOCS */}
+        {/* TOP LEVEL NAVIGATION SWITCHER: INSTANT vs WORKSTATION vs INGEST vs DOCS */}
         {/* ============================================================== */}
         <div className="mb-10 rounded-2xl border border-border bg-canvas p-2 shadow-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            <button
+              onClick={() => setViewMode("instant")}
+              className={`flex items-center justify-between p-3.5 rounded-xl text-left transition-all ${
+                viewMode === "instant"
+                  ? "bg-ink text-paper shadow-sm"
+                  : "bg-stone-50/50 hover:bg-stone-100/80 text-ink-soft hover:text-ink"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${viewMode === "instant" ? "bg-stone-800 text-amber-400" : "bg-stone-200/60 text-amber-600"}`}>
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-medium text-xs leading-none">Instant 3-Min Filing</div>
+                  <div className={`text-[11px] mt-1 ${viewMode === "instant" ? "text-stone-300" : "text-ink-muted"}`}>
+                    ClearTax-style simple flow
+                  </div>
+                </div>
+              </div>
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                viewMode === "instant" ? "bg-emerald-900/80 text-emerald-300" : "bg-emerald-100 text-emerald-800"
+              }`}>
+                Live Demo
+              </span>
+            </button>
+
+            <button
+              onClick={() => setViewMode("ingest")}
+              className={`flex items-center justify-between p-3.5 rounded-xl text-left transition-all ${
+                viewMode === "ingest"
+                  ? "bg-ink text-paper shadow-sm"
+                  : "bg-stone-50/50 hover:bg-stone-100/80 text-ink-soft hover:text-ink"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${viewMode === "ingest" ? "bg-stone-800 text-sky-400" : "bg-stone-200/60 text-sky-700"}`}>
+                  <Upload className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-medium text-xs leading-none">Smart Ingestion</div>
+                  <div className={`text-[11px] mt-1 ${viewMode === "ingest" ? "text-stone-300" : "text-ink-muted"}`}>
+                    Form 16 &amp; Broker P&amp;L
+                  </div>
+                </div>
+              </div>
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                viewMode === "ingest" ? "bg-sky-900/80 text-sky-300" : "bg-sky-100 text-sky-800"
+              }`}>
+                Auto-Fill
+              </span>
+            </button>
+
             <button
               onClick={() => setViewMode("workstation")}
               className={`flex items-center justify-between p-3.5 rounded-xl text-left transition-all ${
@@ -128,58 +175,6 @@ export default function CloudITRProPage() {
                 viewMode === "workstation" ? "bg-stone-800 text-stone-300" : "bg-stone-200/70 text-ink-soft"
               }`}>
                 4 Clients
-              </span>
-            </button>
-
-            <button
-              onClick={() => setViewMode("sandbox")}
-              className={`flex items-center justify-between p-3.5 rounded-xl text-left transition-all ${
-                viewMode === "sandbox"
-                  ? "bg-ink text-paper shadow-sm"
-                  : "bg-stone-50/50 hover:bg-stone-100/80 text-ink-soft hover:text-ink"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${viewMode === "sandbox" ? "bg-stone-800 text-amber-400" : "bg-stone-200/60 text-amber-600"}`}>
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="font-medium text-xs leading-none">Filing Sandbox</div>
-                  <div className={`text-[11px] mt-1 ${viewMode === "sandbox" ? "text-stone-300" : "text-ink-muted"}`}>
-                    Live JSON studio
-                  </div>
-                </div>
-              </div>
-              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-                viewMode === "sandbox" ? "bg-emerald-900/80 text-emerald-300" : "bg-emerald-100 text-emerald-800"
-              }`}>
-                Arpan AIS
-              </span>
-            </button>
-
-            <button
-              onClick={() => setViewMode("ingest")}
-              className={`flex items-center justify-between p-3.5 rounded-xl text-left transition-all ${
-                viewMode === "ingest"
-                  ? "bg-ink text-paper shadow-sm"
-                  : "bg-stone-50/50 hover:bg-stone-100/80 text-ink-soft hover:text-ink"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${viewMode === "ingest" ? "bg-stone-800 text-sky-400" : "bg-stone-200/60 text-sky-700"}`}>
-                  <Upload className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="font-medium text-xs leading-none">Smart Ingestion</div>
-                  <div className={`text-[11px] mt-1 ${viewMode === "ingest" ? "text-stone-300" : "text-ink-muted"}`}>
-                    Form 16 &amp; AIS parser
-                  </div>
-                </div>
-              </div>
-              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-                viewMode === "ingest" ? "bg-sky-900/80 text-sky-300" : "bg-sky-100 text-sky-800"
-              }`}>
-                Auto-Fill
               </span>
             </button>
 
@@ -214,12 +209,13 @@ export default function CloudITRProPage() {
         {/* ============================================================== */}
         {/* ACTIVE VIEW RENDERING */}
         {/* ============================================================== */}
+        {viewMode === "instant" && <ClearTaxFilingView />}
         {viewMode === "workstation" && <WorkstationView />}
         {viewMode === "sandbox" && <SandboxView />}
         {viewMode === "ingest" && (
           <IngestionStudio
             onApplyData={() => {
-              setViewMode("sandbox");
+              setViewMode("instant");
             }}
           />
         )}
@@ -232,7 +228,7 @@ export default function CloudITRProPage() {
             Deterministic Tax Compliance Architecture
           </h3>
           <p className="mx-auto mt-4 max-w-2xl text-body-sm text-ink-soft leading-relaxed">
-            Statutory tax calculations carry zero tolerance for approximation. CloudITR Pro guarantees exact rupee invariants
+            Statutory tax calculations carry zero tolerance for approximation. CloudITR guarantees exact rupee invariants
             across Section 115BAC dual regimes, quarterly advance tax schedules, and official ITD JSON serialization without floating-point drift.
           </p>
           <div className="mt-8 flex justify-center gap-4">
